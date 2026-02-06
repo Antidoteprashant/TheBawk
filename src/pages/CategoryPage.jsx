@@ -1,13 +1,15 @@
 import React, { useLayoutEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { gsap } from 'gsap';
-import { products, categories } from '../data/products';
+import { categories } from '../data/products'; // Categories stay static for now
 import { useCart } from '../context/CartContext';
+import { useAdmin } from '../context/AdminContext';
 
 const CategoryPage = () => {
     const { id } = useParams();
     const container = useRef(null);
     const { addToCart } = useCart();
+    const { products } = useAdmin(); // Use dynamic products
     const [likedItems, setLikedItems] = React.useState({});
 
     const toggleLike = (productId) => {

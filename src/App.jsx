@@ -1,16 +1,32 @@
-import React, { useEffect, useLayoutEffect, useRef } from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
+
+// Pages
 import Home from './pages/Home';
 import Categories from './pages/Categories';
 import CategoryPage from './pages/CategoryPage';
 import ProductPage from './pages/ProductPage';
 import CartPage from './pages/CartPage';
 import TrackOrderPage from './pages/TrackOrderPage';
-import { CartProvider } from './context/CartContext';
+import CheckoutPage from './pages/CheckoutPage';
+import OrderConfirmationPage from './pages/OrderConfirmationPage';
 
+// Admin Pages
+import AdminLayout from './layouts/AdminLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminOrders from './pages/admin/AdminOrders';
+import AdminProducts from './pages/admin/AdminProducts';
+import AdminAddProduct from './pages/admin/AdminAddProduct';
+import AdminAnalytics from './pages/admin/AdminAnalytics';
+
+// Context
+import { CartProvider } from './context/CartContext';
+import { AdminProvider } from './context/AdminContext';
+
+// Components
 import Footer from './components/Footer';
 import Navbar from './components/Navbar';
 
@@ -19,60 +35,69 @@ gsap.registerPlugin(ScrollTrigger);
 
 function App() {
   const mainRef = useRef(null);
-
-  // ... (useLayoutEffect omitted for brevity unless changing)
+  const location = useLocation();
 
   useLayoutEffect(() => {
-    // Global animation context
-    const ctx = gsap.context(() => {
-      // Any global scroll triggers or listeners can go here
-    }, mainRef);
-
     // Initialize Lenis
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      direction: 'vertical',
-      gestureDirection: 'vertical',
       smooth: true,
-      mouseMultiplier: 1,
-      smoothTouch: false,
-      touchMultiplier: 2,
     });
 
-    // Synchronize Lenis with ScrollTrigger
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+
+    requestAnimationFrame(raf);
+
+    // Integrate Lenis with GSAP ScrollTrigger
     lenis.on('scroll', ScrollTrigger.update);
-
-    // Add Lenis's requestAnimationFrame to GSAP's ticker
-    // This promotes better performance than running two RAF loops
     gsap.ticker.add((time) => {
-      lenis.raf(time * 1000); // GSAP gives time in seconds, Lenis needs ms
+      lenis.raf(time * 1000);
     });
-
-    // Disable GSAP lag smoothing to prevent stuttering with Lenis
     gsap.ticker.lagSmoothing(0);
 
     return () => {
-      ctx.revert();
       lenis.destroy();
       gsap.ticker.remove(lenis.raf);
     };
   }, []);
 
+  // Check if current path is admin to conditionally render Navbar/Footer
+  const isAdmin = location.pathname.startsWith('/admin');
+
   return (
     <div ref={mainRef} className="app-container">
-      <CartProvider>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/categories" element={<Categories />} />
-          <Route path="/categories/:id" element={<CategoryPage />} />
-          <Route path="/product/:id" element={<ProductPage />} />
-          <Route path="/cart" element={<CartPage />} />
-          <Route path="/track-order" element={<TrackOrderPage />} />
-        </Routes>
-        <Footer />
-      </CartProvider>
+      <AdminProvider>
+        <CartProvider>
+          {!isAdmin && <Navbar />}
+
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/categories/:id" element={<CategoryPage />} />
+            <Route path="/product/:id" element={<ProductPage />} />
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/track-order" element={<TrackOrderPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
+
+            {/* Admin Routes */}
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="orders" element={<AdminOrders />} />
+              <Route path="products" element={<AdminProducts />} />
+              <Route path="products/add" element={<AdminAddProduct />} />
+              <Route path="analytics" element={<AdminAnalytics />} />
+            </Route>
+          </Routes>
+
+          {!isAdmin && <Footer />}
+        </CartProvider>
+      </AdminProvider>
     </div>
   );
 }

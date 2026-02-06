@@ -26,10 +26,8 @@ const CartPage = () => {
     const handleCheckout = () => {
         if (cart.length === 0) return;
 
-        // Simulate checkout
-        clearCart();
-        alert("Thank you for your purchase!");
-        navigate('/');
+        // Navigate to details page
+        navigate('/checkout');
     };
 
     return (

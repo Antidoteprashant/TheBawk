@@ -1,0 +1,78 @@
+import React from 'react';
+import { useAdmin } from '../../context/AdminContext';
+
+const AdminOrders = () => {
+    const { orders, updateOrderStatus } = useAdmin();
+
+    const handleStatusChange = (id, newStatus) => {
+        updateOrderStatus(id, newStatus);
+    };
+
+    return (
+        <div>
+            <h1 style={{ fontSize: '2.5rem', marginBottom: '30px', textTransform: 'uppercase' }}>Order Management</h1>
+
+            <div className="glass-panel" style={{ padding: '20px', borderRadius: '15px' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <thead>
+                        <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                            <th style={{ padding: '15px', color: 'var(--text-muted)' }}>Order ID</th>
+                            <th style={{ padding: '15px', color: 'var(--text-muted)' }}>Date</th>
+                            <th style={{ padding: '15px', color: 'var(--text-muted)' }}>Customer</th>
+                            <th style={{ padding: '15px', color: 'var(--text-muted)' }}>Type</th>
+                            <th style={{ padding: '15px', color: 'var(--text-muted)' }}>Total</th>
+                            <th style={{ padding: '15px', color: 'var(--text-muted)' }}>Status</th>
+                            <th style={{ padding: '15px', color: 'var(--text-muted)' }}>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {orders.map(order => (
+                            <tr key={order.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                <td style={{ padding: '15px', color: '#fff' }}>{order.id}</td>
+                                <td style={{ padding: '15px', color: 'var(--text-muted)' }}>{order.date}</td>
+                                <td style={{ padding: '15px', color: '#fff' }}>{order.customer}</td>
+                                <td style={{ padding: '15px', color: 'var(--text-muted)' }}>{order.paymentMethod}</td>
+                                <td style={{ padding: '15px', color: '#fff', fontWeight: 'bold' }}>${order.total}</td>
+                                <td style={{ padding: '15px' }}>
+                                    <select
+                                        value={order.status}
+                                        onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                                        style={{
+                                            padding: '8px',
+                                            borderRadius: '5px',
+                                            background: 'rgba(255,255,255,0.1)',
+                                            color: '#fff',
+                                            border: 'none',
+                                            fontSize: '0.9rem'
+                                        }}
+                                    >
+                                        <option value="Ordered">Ordered</option>
+                                        <option value="Packed">Packed</option>
+                                        <option value="Shipped">Shipped</option>
+                                        <option value="Processing">Processing</option>
+                                        <option value="Pending">Pending</option>
+                                        <option value="Delivered">Delivered</option>
+                                    </select>
+                                </td>
+                                <td style={{ padding: '15px' }}>
+                                    <button style={{
+                                        padding: '8px 15px',
+                                        background: 'var(--accent-primary)',
+                                        color: '#000',
+                                        border: 'none',
+                                        borderRadius: '5px',
+                                        cursor: 'pointer',
+                                        fontSize: '0.8rem',
+                                        fontWeight: 'bold'
+                                    }}>View</button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
+
+export default AdminOrders;
