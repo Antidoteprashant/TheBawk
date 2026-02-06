@@ -66,7 +66,7 @@ const Flashback = () => {
     const marqueeItems = [...memories, ...memories];
 
     return (
-        <section id="flashback" ref={sectionRef} style={{
+        <section id="categories" ref={sectionRef} style={{
             minHeight: '60vh',
             position: 'relative',
             overflow: 'hidden',
@@ -78,7 +78,7 @@ const Flashback = () => {
 
             <div style={{ paddingLeft: '5vw', marginBottom: '2rem' }}>
                 <h2 className="glow-text header-reveal text-reveal-mask" style={{ fontSize: '3rem', color: 'var(--text-main)' }}>
-                    <span className="text-reveal-line">Archive</span>
+                    <span className="text-reveal-line">Categories</span>
                 </h2>
             </div>
 

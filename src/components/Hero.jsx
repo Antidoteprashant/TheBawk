@@ -336,7 +336,7 @@ const Hero = () => {
                         letterSpacing: '-5px'
                     }}
                 >
-                    QUICK SNATCH
+                    bawk
                 </h1>
 
                 <p style={{

@@ -27,8 +27,8 @@ const Navbar = () => {
     const navLinks = [
         { name: 'Home', id: 'hero' },
         { name: 'Brief', id: 'details' },
-        { name: 'Archive', id: 'flashback' },
-        { name: 'Join', id: 'register' },
+        { name: 'Categories', id: 'categories' },
+        { name: 'Buy', id: 'register' },
     ];
 
     return (
@@ -61,7 +61,7 @@ const Navbar = () => {
                     color: '#fff',
                     letterSpacing: '-0.5px'
                 }}>
-                QS.
+                bawk.
             </div>
 
             {/* Links */}

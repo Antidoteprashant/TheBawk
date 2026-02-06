@@ -4,8 +4,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Hero from './components/Hero';
 import EventDetails from './components/EventDetails';
 import Flashback from './components/Flashback';
-import Registration from './components/Registration';
 
+import Footer from './components/Footer';
 import Navbar from './components/Navbar';
 
 // Register standard plugins
@@ -29,7 +29,7 @@ function App() {
       <Hero />
       <EventDetails />
       <Flashback />
-      <Registration />
+      <Footer />
     </div>
   );
 }

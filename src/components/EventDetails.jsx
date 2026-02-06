@@ -88,7 +88,7 @@ const EventDetails = () => {
             <div className="detail-header" style={{ textAlign: 'center', marginBottom: '80px', maxWidth: '800px' }}>
                 <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', marginBottom: '20px', color: 'var(--text-main)', lineHeight: 1.2 }}>
                     <span className="text-reveal-mask">
-                        <span className="text-reveal-line">What is <span className="text-gradient">Quick Snatch?</span></span>
+                        <span className="text-reveal-line">What is <span className="text-gradient">bawk?</span></span>
                     </span>
                 </h2>
 
