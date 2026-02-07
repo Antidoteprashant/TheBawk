@@ -58,11 +58,14 @@ const OrderConfirmationPage = () => {
                 }}>
                     <div className="glass-panel" style={{ padding: '15px' }}>
                         <span style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)' }}>Payment Method</span>
-                        <span style={{ fontWeight: 'bold', color: '#fff' }}>Cash on Delivery</span>
+                        <span style={{ fontWeight: 'bold', color: '#fff' }}>{location.state?.paymentMethod || 'Online Payment'}</span>
+                        {location.state?.paymentId && (
+                            <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '5px' }}>ID: {location.state.paymentId}</span>
+                        )}
                     </div>
                     <div className="glass-panel" style={{ padding: '15px' }}>
                         <span style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)' }}>Status</span>
-                        <span style={{ fontWeight: 'bold', color: 'var(--accent-primary)' }}>Pending</span>
+                        <span style={{ fontWeight: 'bold', color: 'var(--accent-primary)' }}>{location.state?.paymentStatus || 'Paid'}</span>
                     </div>
                 </div>
 

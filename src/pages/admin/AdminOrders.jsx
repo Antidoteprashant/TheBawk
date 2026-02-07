@@ -29,10 +29,10 @@ const AdminOrders = () => {
                         {orders.map(order => (
                             <tr key={order.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                                 <td style={{ padding: '15px', color: '#fff' }}>{order.id}</td>
-                                <td style={{ padding: '15px', color: 'var(--text-muted)' }}>{order.date}</td>
-                                <td style={{ padding: '15px', color: '#fff' }}>{order.customer}</td>
-                                <td style={{ padding: '15px', color: 'var(--text-muted)' }}>{order.paymentMethod}</td>
-                                <td style={{ padding: '15px', color: '#fff', fontWeight: 'bold' }}>${order.total}</td>
+                                <td style={{ padding: '15px', color: 'var(--text-muted)' }}>{new Date(order.created_at).toLocaleDateString()}</td>
+                                <td style={{ padding: '15px', color: '#fff' }}>{order.customer_name}</td>
+                                <td style={{ padding: '15px', color: 'var(--text-muted)' }}>{order.payment_method}</td>
+                                <td style={{ padding: '15px', color: '#fff', fontWeight: 'bold' }}>₹{order.total_amount}</td>
                                 <td style={{ padding: '15px' }}>
                                     <select
                                         value={order.status}

@@ -64,16 +64,18 @@ const AdminAddProduct = () => {
             return;
         }
 
+        // Find Category Name
+        const selectedCategory = categories.find(c => c.id === parseInt(formData.categoryId)) || categories[0];
+
         const newProduct = {
             name: formData.name,
             price: parseFloat(formData.price),
-            originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
-            stock: parseInt(formData.stock),
-            categoryId: formData.categoryId,
             description: formData.description,
-            // Use preview as the image source for demo (base64)
-            image: formData.imagePreview,
-            status: formData.status
+            stock: parseInt(formData.stock),
+            category: selectedCategory.name, // Map to name
+            image_url: formData.imagePreview, // Map to image_url (using base64 for now)
+            // status: formData.status // Schema might not have status, ignoring for now or adding if schema allows, but schema didn't include it. 
+            // The schema created was: name, description, price, category, image_url, stock.
         };
 
         addProduct(newProduct);

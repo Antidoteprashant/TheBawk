@@ -127,7 +127,7 @@ const AdminDashboard = () => {
                                 onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                             >
                                 <td style={{ padding: '20px', color: '#fff', fontFamily: 'monospace', fontSize: '1.1rem' }}>{order.id}</td>
-                                <td style={{ padding: '20px', color: '#fff', fontWeight: 'bold' }}>{order.customer}</td>
+                                <td style={{ padding: '20px', color: '#fff', fontWeight: 'bold' }}>{order.customer_name}</td>
                                 <td style={{ padding: '20px' }}>
                                     <span style={{
                                         padding: '8px 15px',
@@ -150,7 +150,7 @@ const AdminDashboard = () => {
                                         {order.status}
                                     </span>
                                 </td>
-                                <td style={{ padding: '20px', color: '#fff', fontWeight: 'bold', fontSize: '1.1rem' }}>${order.total}</td>
+                                <td style={{ padding: '20px', color: '#fff', fontWeight: 'bold', fontSize: '1.1rem' }}>₹{order.total_amount}</td>
                             </tr>
                         ))}
                     </tbody>

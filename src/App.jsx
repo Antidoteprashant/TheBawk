@@ -21,6 +21,7 @@ import AdminOrders from './pages/admin/AdminOrders';
 import AdminProducts from './pages/admin/AdminProducts';
 import AdminAddProduct from './pages/admin/AdminAddProduct';
 import AdminAnalytics from './pages/admin/AdminAnalytics';
+import AdminLogin from './pages/admin/AdminLogin';
 
 // Context
 import { CartProvider } from './context/CartContext';
@@ -29,6 +30,7 @@ import { AdminProvider } from './context/AdminContext';
 // Components
 import Footer from './components/Footer';
 import Navbar from './components/Navbar';
+import ProtectedAdminRoute from './components/ProtectedAdminRoute';
 
 // Register standard plugins
 gsap.registerPlugin(ScrollTrigger);
@@ -85,13 +87,18 @@ function App() {
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
 
-            {/* Admin Routes */}
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="orders" element={<AdminOrders />} />
-              <Route path="products" element={<AdminProducts />} />
-              <Route path="products/add" element={<AdminAddProduct />} />
-              <Route path="analytics" element={<AdminAnalytics />} />
+            {/* Admin Auth */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+
+            {/* Protected Admin Routes */}
+            <Route element={<ProtectedAdminRoute />}>
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="orders" element={<AdminOrders />} />
+                <Route path="products" element={<AdminProducts />} />
+                <Route path="products/add" element={<AdminAddProduct />} />
+                <Route path="analytics" element={<AdminAnalytics />} />
+              </Route>
             </Route>
           </Routes>
 

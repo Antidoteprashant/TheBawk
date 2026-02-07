@@ -1,7 +1,8 @@
-import React, { useRef, useLayoutEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { gsap } from 'gsap';
 import { useCart } from '../context/CartContext';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../supabase';
 
 const CheckoutPage = () => {
     const navigate = useNavigate();
@@ -9,7 +10,6 @@ const CheckoutPage = () => {
     const container = useRef(null);
 
     // Form State
-    const [paymentMethod, setPaymentMethod] = useState('cod');
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
@@ -39,7 +39,17 @@ const CheckoutPage = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const loadRazorpay = () => {
+        return new Promise((resolve) => {
+            const script = document.createElement('script');
+            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
+        });
+    };
+
+    const handlePayment = async (e) => {
         e.preventDefault();
 
         // Basic Validation
@@ -49,26 +59,87 @@ const CheckoutPage = () => {
             return;
         }
 
-        // Generate Mock Order ID
-        const orderId = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
+        const res = await loadRazorpay();
+        if (!res) {
+            alert('Razorpay SDK failed to load. Are you online?');
+            return;
+        }
 
-        // Clear Cart and Navigate
-        clearCart();
-        navigate('/order-confirmation', {
-            state: {
-                orderId,
-                ...formData,
-                paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment',
-                paymentStatus: 'Pending'
+        // Calculate Total Amount
+        const totalAmount = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+
+        // Razorpay Options
+        const options = {
+            key: "YOUR_RAZORPAY_KEY_ID", // Enter the Key ID generated from the Dashboard
+            amount: totalAmount * 100, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+            currency: "INR",
+            name: "Bawk Store",
+            description: "Test Transaction",
+            image: "https://example.com/your_logo",
+            handler: async function (response) {
+                // Payment Success
+                const orderId = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
+
+                const newOrder = {
+                    id: orderId,
+                    customer_name: formData.fullName,
+                    email: formData.email,
+                    phone: formData.phone,
+                    address: formData.address,
+                    city: formData.city,
+                    state: formData.state,
+                    pincode: formData.pincode,
+                    total_amount: totalAmount,
+                    payment_method: 'Online Payment (Razorpay)',
+                    payment_id: response.razorpay_payment_id,
+                    status: 'Paid',
+                    items: cart // Saving cart snapshot
+                };
+
+                try {
+                    const { error } = await supabase
+                        .from('orders')
+                        .insert([newOrder]);
+
+                    if (error) {
+                        console.error("Error saving order:", error);
+                        alert("Payment successful but failed to save order. Please contact support.");
+                        return;
+                    }
+
+                    // Clear Cart and Navigate
+                    clearCart();
+                    navigate('/order-confirmation', {
+                        state: {
+                            orderId,
+                            ...formData,
+                            paymentMethod: 'Online Payment (Razorpay)',
+                            paymentStatus: 'Paid',
+                            paymentId: response.razorpay_payment_id
+                        }
+                    });
+
+                } catch (err) {
+                    console.error("Unexpected error saving order:", err);
+                    alert("An error occurred while placing your order.");
+                }
+            },
+            prefill: {
+                name: formData.fullName,
+                email: formData.email,
+                contact: formData.phone
+            },
+            notes: {
+                address: formData.address
+            },
+            theme: {
+                color: "#00f0ff" // Matches var(--accent-primary)
             }
-        });
-    };
+        };
 
-    if (cart.length === 0) {
-        // Redirect if empty (optional, but good UX)
-        // navigate('/cart');
-        // For now, render "Cart is empty" message or let them back
-    }
+        const paymentObject = new window.Razorpay(options);
+        paymentObject.open();
+    };
 
     const inputStyle = {
         width: '100%',
@@ -105,100 +176,42 @@ const CheckoutPage = () => {
                     textTransform: 'uppercase'
                 }}>Checkout Details</h1>
 
-                <form onSubmit={handleSubmit} className="glass-panel" style={{ padding: '40px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <form onSubmit={handlePayment} className="glass-panel" style={{ padding: '40px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
                     <div className="form-group">
                         <label style={labelStyle}>Full Name</label>
-                        <input name="fullName" type="text" style={inputStyle} value={formData.fullName} onChange={handleChange} />
+                        <input name="fullName" type="text" style={inputStyle} value={formData.fullName} onChange={handleChange} required />
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                         <div className="form-group">
                             <label style={labelStyle}>Email</label>
-                            <input name="email" type="email" style={inputStyle} value={formData.email} onChange={handleChange} />
+                            <input name="email" type="email" style={inputStyle} value={formData.email} onChange={handleChange} required />
                         </div>
                         <div className="form-group">
                             <label style={labelStyle}>Phone</label>
-                            <input name="phone" type="tel" style={inputStyle} value={formData.phone} onChange={handleChange} />
+                            <input name="phone" type="tel" style={inputStyle} value={formData.phone} onChange={handleChange} required />
                         </div>
                     </div>
 
                     <div className="form-group">
                         <label style={labelStyle}>Address</label>
-                        <input name="address" type="text" style={inputStyle} value={formData.address} onChange={handleChange} />
+                        <input name="address" type="text" style={inputStyle} value={formData.address} onChange={handleChange} required />
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
                         <div className="form-group">
                             <label style={labelStyle}>City</label>
-                            <input name="city" type="text" style={inputStyle} value={formData.city} onChange={handleChange} />
+                            <input name="city" type="text" style={inputStyle} value={formData.city} onChange={handleChange} required />
                         </div>
                         <div className="form-group">
                             <label style={labelStyle}>State</label>
-                            <input name="state" type="text" style={inputStyle} value={formData.state} onChange={handleChange} />
+                            <input name="state" type="text" style={inputStyle} value={formData.state} onChange={handleChange} required />
                         </div>
                         <div className="form-group">
                             <label style={labelStyle}>Pincode</label>
-                            <input name="pincode" type="text" style={inputStyle} value={formData.pincode} onChange={handleChange} />
+                            <input name="pincode" type="text" style={inputStyle} value={formData.pincode} onChange={handleChange} required />
                         </div>
-                    </div>
-
-                    {/* Payment Method Section */}
-                    <div className="form-group" style={{ marginTop: '20px' }}>
-                        <label style={labelStyle}>Payment Method</label>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: '10px' }}>
-                            <div
-                                onClick={() => setPaymentMethod('cod')}
-                                style={{
-                                    padding: '15px',
-                                    border: `1px solid ${paymentMethod === 'cod' ? 'var(--accent-primary)' : 'var(--glass-border)'}`,
-                                    background: paymentMethod === 'cod' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                                    borderRadius: '5px',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '10px',
-                                    transition: 'all 0.3s'
-                                }}
-                            >
-                                <div style={{
-                                    width: '20px',
-                                    height: '20px',
-                                    borderRadius: '50%',
-                                    border: `5px solid ${paymentMethod === 'cod' ? 'var(--accent-primary)' : 'var(--text-muted)'}`,
-                                    background: 'transparent'
-                                }}></div>
-                                <span style={{ fontWeight: 'bold', color: paymentMethod === 'cod' ? '#fff' : 'var(--text-muted)' }}>Cash on Delivery</span>
-                            </div>
-
-                            <div
-                                onClick={() => alert("Online payment is coming soon! Please use Cash on Delivery.")}
-                                style={{
-                                    padding: '15px',
-                                    border: '1px solid var(--glass-border)',
-                                    background: 'rgba(0, 0, 0, 0.2)',
-                                    borderRadius: '5px',
-                                    cursor: 'not-allowed',
-                                    opacity: 0.5,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '10px'
-                                }}
-                                title="Coming Soon"
-                            >
-                                <div style={{
-                                    width: '20px',
-                                    height: '20px',
-                                    borderRadius: '50%',
-                                    border: '2px solid var(--text-muted)',
-                                    background: 'transparent'
-                                }}></div>
-                                <span style={{ fontWeight: 'bold', color: 'var(--text-muted)' }}>Online Payment</span>
-                            </div>
-                        </div>
-                        <p style={{ marginTop: '10px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                            * Pay securely at your doorstep with Cash or UPI.
-                        </p>
                     </div>
 
                     <button type="submit" style={{
@@ -213,7 +226,7 @@ const CheckoutPage = () => {
                         cursor: 'pointer',
                         textTransform: 'uppercase'
                     }}>
-                        Place Order
+                        Pay & Place Order
                     </button>
 
                 </form>
