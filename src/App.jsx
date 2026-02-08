@@ -31,6 +31,8 @@ import { AdminProvider } from './context/AdminContext';
 import Footer from './components/Footer';
 import Navbar from './components/Navbar';
 import ProtectedAdminRoute from './components/ProtectedAdminRoute';
+import ProtectedCheckoutRoute from './components/ProtectedCheckoutRoute';
+import LoginPage from './pages/LoginPage';
 
 // Register standard plugins
 gsap.registerPlugin(ScrollTrigger);
@@ -84,7 +86,13 @@ function App() {
             <Route path="/product/:id" element={<ProductPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/track-order" element={<TrackOrderPage />} />
-            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/login" element={<LoginPage />} />
+
+            {/* Protected Checkout */}
+            <Route element={<ProtectedCheckoutRoute />}>
+              <Route path="/checkout" element={<CheckoutPage />} />
+            </Route>
+
             <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
 
             {/* Admin Auth */}

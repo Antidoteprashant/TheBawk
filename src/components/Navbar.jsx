@@ -1,15 +1,28 @@
-import React, { useLayoutEffect, useRef } from 'react';
+import React, { useLayoutEffect, useRef, useState, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+
+import { supabase } from '../supabase';
 
 const Navbar = () => {
     const navRef = useRef(null);
     const navigate = useNavigate();
     const location = useLocation();
     const { getCartCount } = useCart();
+    const [user, setUser] = useState(null);
 
     useLayoutEffect(() => {
+        // Auth Listener
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setUser(session?.user ?? null);
+        });
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null);
+        });
+
+        // GSAP Animation
         const ctx = gsap.context(() => {
             gsap.from(navRef.current, {
                 y: -100,
@@ -161,6 +174,59 @@ const Navbar = () => {
                         </span>
                     )}
                 </div>
+                {/* User Info / Logout */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    {user ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{ color: 'var(--accent-primary)', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                {user.email?.split('@')[0]}
+                            </span>
+                            <button
+                                onClick={async () => {
+                                    await supabase.auth.signOut();
+                                    navigate('/');
+                                }}
+                                style={{
+                                    background: 'rgba(255,255,255,0.1)',
+                                    border: 'none',
+                                    color: '#fff',
+                                    padding: '5px 10px',
+                                    borderRadius: '5px',
+                                    cursor: 'pointer',
+                                    fontSize: '0.7rem'
+                                }}
+                            >
+                                LOGOUT
+                            </button>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={() => navigate('/login')}
+                            style={{
+                                background: 'transparent',
+                                border: '1px solid var(--accent-primary)',
+                                color: 'var(--accent-primary)',
+                                padding: '5px 15px',
+                                borderRadius: '20px',
+                                cursor: 'pointer',
+                                fontSize: '0.8rem',
+                                fontWeight: 'bold',
+                                transition: 'all 0.3s'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.target.style.background = 'var(--accent-primary)';
+                                e.target.style.color = '#000';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.target.style.background = 'transparent';
+                                e.target.style.color = 'var(--accent-primary)';
+                            }}
+                        >
+                            LOGIN
+                        </button>
+                    )}
+                </div>
+
             </div>
         </nav>
     );

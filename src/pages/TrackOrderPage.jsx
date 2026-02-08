@@ -1,5 +1,6 @@
 import React, { useRef, useState, useLayoutEffect } from 'react';
 import { gsap } from 'gsap';
+import { supabase } from '../supabase';
 
 const TrackOrderPage = () => {
     const [orderId, setOrderId] = useState('');
@@ -23,24 +24,63 @@ const TrackOrderPage = () => {
         return () => ctx.revert();
     }, []);
 
-    const handleTrack = () => {
-        if (!orderId.trim()) return;
+    const handleTrack = async () => {
+        if (!orderId.trim()) {
+            return;
+        }
+        setStatus(null); // Reset UI
 
-        // Mock Logic: If ID is entered, show a random status or a fixed one for demo
-        // Let's pretend it's always "Out for Delivery" (Step 4)
-        setStatus(4);
+        try {
+            const { data, error } = await supabase.rpc('get_order_status', { p_order_id: orderId });
 
-        // Animate timeline
-        setTimeout(() => {
-            gsap.fromTo('.step',
-                { scale: 0, opacity: 0 },
-                { scale: 1, opacity: 1, duration: 0.5, stagger: 0.2, ease: "back.out(1.7)" }
-            );
-            gsap.fromTo('.progress-line-fill',
-                { width: '0%' },
-                { width: '75%', duration: 1.5, delay: 0.5, ease: "power2.inOut" } // 75% for Step 4
-            );
-        }, 100);
+            if (error) {
+                console.error("Error fetching order status:", error);
+                alert("Error fetching status. Please try again.");
+                return;
+            }
+
+            if (!data) {
+                alert("Order Not Found. Please check your Order ID.");
+                return;
+            }
+
+            // Map status text to step index
+            const statusMap = {
+                'Ordered': 1,
+                'Pending': 1,
+                'Paid': 1,
+                'Packed': 2,
+                'Processing': 2,
+                'Shipped': 3,
+                'Out for Delivery': 4,
+                'Delivered': 5
+            };
+
+            const stepIndex = statusMap[data] || 1; // Default to step 1
+            setStatus(stepIndex);
+
+            // Animate timeline based on the new status
+            setTimeout(() => {
+                gsap.fromTo('.step',
+                    { scale: 0, opacity: 0 },
+                    { scale: 1, opacity: 1, duration: 0.5, stagger: 0.2, ease: "back.out(1.7)" }
+                );
+
+                // Calculate width percentage based on step (20% per step roughly, but fine-tuned)
+                // 1 -> 0%, 2 -> 25%, 3 -> 50%, 4 -> 75%, 5 -> 100%
+                const percentages = { 1: '0%', 2: '25%', 3: '50%', 4: '75%', 5: '100%' };
+                const width = percentages[stepIndex] || '0%';
+
+                gsap.fromTo('.progress-line-fill',
+                    { width: '0%' },
+                    { width: width, duration: 1.5, delay: 0.5, ease: "power2.inOut" }
+                );
+            }, 100);
+
+        } catch (err) {
+            console.error("Unexpected error:", err);
+            alert("An error occurred while tracking your order.");
+        }
     };
 
     return (

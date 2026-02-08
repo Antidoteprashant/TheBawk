@@ -49,6 +49,7 @@ const AdminOrders = () => {
                                         <option value="Ordered">Ordered</option>
                                         <option value="Packed">Packed</option>
                                         <option value="Shipped">Shipped</option>
+                                        <option value="Out for Delivery">Out for Delivery</option>
                                         <option value="Processing">Processing</option>
                                         <option value="Pending">Pending</option>
                                         <option value="Delivered">Delivered</option>
